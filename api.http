@@ -1,0 +1,43 @@
+### API Testing File for FastAPI Health Check App
+### Use this file with REST Client extension in VS Code or any HTTP client
+
+### Variables
+@baseUrl = http://localhost:8000
+@token = your_jwt_token_here
+
+### Health Check
+GET {{baseUrl}}/health
+
+###
+
+### Register a new user
+POST {{baseUrl}}/user/register
+Content-Type: application/json
+
+{
+  "email": "john.doe@example.com",
+  "name": "John Doe",
+  "password": "securepassword123"
+}
+
+###
+
+### Login to get access token (OAuth2 Password Flow)
+# @name login
+POST {{baseUrl}}/user/token
+Content-Type: application/x-www-form-urlencoded
+
+username=john.doe@example.com&password=securepassword123
+
+###
+
+### Extract token from login response
+@token = {{login.response.body.access_token}}
+
+###
+
+### Get user profile (protected endpoint)
+GET {{baseUrl}}/user/profile
+Authorization: Bearer {{token}}
+
+###
