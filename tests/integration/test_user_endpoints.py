@@ -59,17 +59,32 @@ class TestUserRegistration:
         # Missing email
         incomplete_data1 = {"name": "Test User", "password": "password123"}
         response1 = test_client.post("/user/register", json=incomplete_data1)
-        assert response1.status_code == 422
+        assert response1.status_code == 400  # Changed from 422 to 400
+        response_data1 = response1.json()
+        assert response_data1["error"] == "Validation failed"
+        assert len(response_data1["details"]) == 1
+        assert response_data1["details"][0]["field"] == "email"
+        assert response_data1["details"][0]["message"] == "Field required"
 
         # Missing name
         incomplete_data2 = {"email": "test@example.com", "password": "password123"}
         response2 = test_client.post("/user/register", json=incomplete_data2)
-        assert response2.status_code == 422
+        assert response2.status_code == 400  # Changed from 422 to 400
+        response_data2 = response2.json()
+        assert response_data2["error"] == "Validation failed"
+        assert len(response_data2["details"]) == 1
+        assert response_data2["details"][0]["field"] == "name"
+        assert response_data2["details"][0]["message"] == "Field required"
 
         # Missing password
         incomplete_data3 = {"email": "test@example.com", "name": "Test User"}
         response3 = test_client.post("/user/register", json=incomplete_data3)
-        assert response3.status_code == 422
+        assert response3.status_code == 400  # Changed from 422 to 400
+        response_data3 = response3.json()
+        assert response_data3["error"] == "Validation failed"
+        assert len(response_data3["details"]) == 1
+        assert response_data3["details"][0]["field"] == "password"
+        assert response_data3["details"][0]["message"] == "Field required"
 
     def test_registration_with_invalid_email(
         self, test_client: TestClient, clean_database
@@ -82,10 +97,18 @@ class TestUserRegistration:
         }
 
         response = test_client.post("/user/register", json=invalid_data)
-        # This might pass if there's no email validation in the model
-        # If email validation is added, this should return 422
-        print(f"Response status: {response.status_code}")
-        print(f"Response data: {response.json()}")
+        # Currently there's no email validation in the UserCreate model
+        # So this will succeed. If email validation is added later,
+        # this should return 400 with validation error
+        if response.status_code == 400:
+            response_data = response.json()
+            assert response_data["error"] == "Validation failed"
+            assert any(
+                "email" in detail["field"] for detail in response_data["details"]
+            )
+        else:
+            # If no email validation, it should succeed
+            assert response.status_code == 200
 
 
 class TestTokenGeneration:
@@ -153,12 +176,22 @@ class TestTokenGeneration:
         # Missing username
         incomplete_data1 = {"password": "password123"}
         response1 = test_client.post("/user/token", data=incomplete_data1)
-        assert response1.status_code == 422
+        assert response1.status_code == 400  # Changed from 422 to 400
+        response_data1 = response1.json()
+        assert response_data1["error"] == "Validation failed"
+        assert any(
+            "username" in detail["field"] for detail in response_data1["details"]
+        )
 
         # Missing password
         incomplete_data2 = {"username": "test@example.com"}
         response2 = test_client.post("/user/token", data=incomplete_data2)
-        assert response2.status_code == 422
+        assert response2.status_code == 400  # Changed from 422 to 400
+        response_data2 = response2.json()
+        assert response_data2["error"] == "Validation failed"
+        assert any(
+            "password" in detail["field"] for detail in response_data2["details"]
+        )
 
 
 class TestUserProfile:
@@ -398,3 +431,54 @@ class TestDatabaseState:
             test_db_session.query(User).filter(User.email == user_data["email"]).count()
         )
         assert user_count_after == 1
+
+
+class TestErrorHandling:
+    """Test cases for error handling."""
+
+    def test_validation_error_format(self, test_client: TestClient, clean_database):
+        """Test that validation errors return the correct format."""
+        # Test with completely empty request body
+        response = test_client.post("/user/register", json={})
+        assert response.status_code == 400
+
+        response_data = response.json()
+        assert "error" in response_data
+        assert "details" in response_data
+        assert response_data["error"] == "Validation failed"
+        assert isinstance(response_data["details"], list)
+        assert len(response_data["details"]) == 3  # email, name, password all missing
+
+        # Check that all required fields are reported
+        missing_fields = [detail["field"] for detail in response_data["details"]]
+        assert "email" in missing_fields
+        assert "name" in missing_fields
+        assert "password" in missing_fields
+
+        # Check that each detail has the expected structure
+        for detail in response_data["details"]:
+            assert "field" in detail
+            assert "message" in detail
+            assert "type" in detail
+            assert detail["message"] == "Field required"
+            assert detail["type"] == "missing"
+
+    def test_multiple_validation_errors(self, test_client: TestClient, clean_database):
+        """Test handling of multiple validation errors in one request."""
+        # Send request with some invalid data types
+        invalid_data = {
+            "email": 123,  # Should be string
+            "name": None,  # Should be string
+            # password missing entirely
+        }
+
+        response = test_client.post("/user/register", json=invalid_data)
+        assert response.status_code == 400
+
+        response_data = response.json()
+        assert response_data["error"] == "Validation failed"
+        assert len(response_data["details"]) >= 2  # At least 2 errors
+
+        # Should have errors for multiple fields
+        error_fields = [detail["field"] for detail in response_data["details"]]
+        assert len(set(error_fields)) >= 2  # Multiple different fields with errors
