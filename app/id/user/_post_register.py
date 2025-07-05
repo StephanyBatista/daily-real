@@ -2,9 +2,9 @@ from fastapi import Depends, HTTPException
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
-from app.id.user_context.auth import get_password_hash
-from app.id.user_context.repository import get_user_by_username
-from app.id.user_context.user import User
+from app.id.user._auth import get_password_hash
+from app.id.user._repository import get_user_by_username
+from app.id.user._user import User
 from app.infra.database import get_db
 
 

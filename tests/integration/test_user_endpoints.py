@@ -378,7 +378,7 @@ class TestDatabaseState:
         self, test_client: TestClient, test_db_session: Session, clean_database
     ):
         """Test that user data is properly persisted in database."""
-        from app.id.user_context.user import User
+        from app.id.user._user import User
 
         user_data = {
             "email": "persist@example.com",
@@ -404,7 +404,7 @@ class TestDatabaseState:
         self, test_client: TestClient, test_db_session: Session, clean_database
     ):
         """Test database-level email uniqueness constraint."""
-        from app.id.user_context.user import User
+        from app.id.user._user import User
 
         user_data = {
             "email": "unique@example.com",

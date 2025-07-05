@@ -4,7 +4,7 @@ This directory contains comprehensive integration tests for the user endpoints u
 
 ## Overview
 
-The integration tests cover all endpoints defined in `app/id/user_context/route.py`:
+The integration tests cover all endpoints defined in `app/id/user/route.py`:
 
 - **POST /user/register** - User registration
 - **POST /user/token** - Authentication/token generation  

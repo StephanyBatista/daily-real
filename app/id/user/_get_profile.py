@@ -1,8 +1,8 @@
 from fastapi.params import Depends
 from pydantic import BaseModel
 
-from app.id.user_context.auth import get_user_by_token
-from app.id.user_context.user import User
+from app.id.user._auth import get_user_by_token
+from app.id.user._user import User
 
 
 class UserProfile(BaseModel):

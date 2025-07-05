@@ -37,7 +37,7 @@ def test_engine(test_database_url: str):
         conn.commit()
 
     # Import User model to register it with Base.metadata
-    from app.id.user_context.user import User  # noqa: F401
+    from app.id.user._user import User  # noqa: F401
 
     # Create all tables
     Base.metadata.create_all(bind=engine)

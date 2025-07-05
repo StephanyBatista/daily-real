@@ -8,8 +8,8 @@ from jose import JWTError, jwt
 from passlib.context import CryptContext
 from sqlalchemy.orm import Session
 
-from app.id.user_context.repository import get_user_by_username
-from app.id.user_context.user import User
+from app.id.user._repository import get_user_by_username
+from app.id.user._user import User
 
 SECRET_KEY = os.getenv("SECRET_KEY", "your-secret-key-change-in-production")
 ALGORITHM = "HS256"

@@ -6,7 +6,7 @@ from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 
-from app.id.user_context.route import user_router
+from app.id.user.route import user_router
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)

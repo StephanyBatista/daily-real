@@ -87,7 +87,7 @@ uv run pytest tests --cov=app
 ├── app/                    # Main application code
 │   ├── main.py            # FastAPI app initialization
 │   ├── id/                # Identity/user management module
-│   │   └── user_context/  # User-related functionality
+│   │   └── user/  # User-related functionality
 │   └── infra/             # Infrastructure code (database, etc.)
 ├── tests/                 # Test suite
 │   ├── integration/       # Integration tests

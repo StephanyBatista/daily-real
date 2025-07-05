@@ -1,8 +1,8 @@
 from fastapi import APIRouter
 
-from app.id.user_context.get_profile import UserProfile, get_user_profile
-from app.id.user_context.post_register import UserResponse, register
-from app.id.user_context.post_token import TokenResponse, token
+from app.id.user._get_profile import UserProfile, get_user_profile
+from app.id.user._post_register import UserResponse, register
+from app.id.user._post_token import TokenResponse, token
 
 user_router = APIRouter()
 
