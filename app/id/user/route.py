@@ -1,6 +1,7 @@
 from fastapi import APIRouter
 
-from app.id.user._get_profile import UserProfile, get_user_profile
+from app.id.public.user_by_token import UserByToken
+from app.id.user._get_profile import get_user_profile
 from app.id.user._post_register import post_register
 from app.id.user._post_token import TokenResponse, token
 
@@ -30,7 +31,7 @@ user_router.add_api_route(
     "/profile",
     endpoint=get_user_profile,
     methods=["get"],
-    response_model=UserProfile,
+    response_model=UserByToken,
     tags=["User Profile"],
     summary="Get User Profile",
     description="Get User Profile (protected endpoint example).",

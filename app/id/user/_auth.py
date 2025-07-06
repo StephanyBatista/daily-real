@@ -2,14 +2,12 @@ import os
 from datetime import datetime, timedelta, timezone
 
 from fastapi import HTTPException, status
-from fastapi.params import Depends
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 from sqlalchemy.orm import Session
 
 from app.id.user._repository import get_user_by_username
-from app.id.user._user import User
 
 SECRET_KEY = os.getenv("SECRET_KEY", "your-secret-key-change-in-production")
 ALGORITHM = "HS256"
@@ -64,18 +62,3 @@ def verify_token(token: str):
             detail="Could not validate credentials",
             headers={"WWW-Authenticate": "Bearer"},
         )
-
-
-async def get_user_by_token(token: str = Depends(oauth2_scheme)):
-    """Dependency to get current authenticated user."""
-    payload = verify_token(token)
-    email: str = payload.get("sub")
-    if email is None:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Could not validate credentials",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-
-    user = User(email=email, name=payload.get("name"))
-    return user

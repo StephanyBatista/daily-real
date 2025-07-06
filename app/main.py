@@ -7,6 +7,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 
 from app.id.user.route import user_router
+from app.movement.account.route import account_router
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
@@ -14,6 +15,7 @@ logger = logging.getLogger(__name__)
 
 # Load environment variables from .env file
 load_dotenv()
+
 
 # Create FastAPI instance
 app = FastAPI(
@@ -67,22 +69,24 @@ app.include_router(
     prefix="/user",
 )
 
+app.include_router(
+    account_router,
+    prefix="/account",
+)
+
 
 @app.get("/health")
 async def health_check():
     return JSONResponse(status_code=200, content={"status": "ok"})
 
 
-# Initialize database only when running the app directly
 if __name__ == "__main__":
+    import uvicorn
+
     from app.infra.database import create_tables, init_database
 
     init_database()
     create_tables()
-
-
-if __name__ == "__main__":
-    import uvicorn
 
     uvicorn.run(
         app, host=os.getenv("HOST", "0.0.0.0"), port=int(os.getenv("PORT", "8000"))
