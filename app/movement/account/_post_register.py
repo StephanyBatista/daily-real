@@ -23,7 +23,7 @@ def post_register(
             account.credit_details.due_day,
         )
     else:
-        account_db.configure_bank_detail(
+        account_db.configure_bank_details(
             account.bank_detail.agency,
             account.bank_detail.account_number,
             account.bank_detail.account_type,
