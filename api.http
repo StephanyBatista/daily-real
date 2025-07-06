@@ -73,3 +73,9 @@ Authorization: Bearer {{token}}
 }
 
 ###
+
+### Get all accounts for the current user
+GET {{baseUrl}}/account
+Authorization: Bearer {{token}}
+
+###
