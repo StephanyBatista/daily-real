@@ -1,6 +1,7 @@
 import enum
+from datetime import datetime
 
-from sqlalchemy import Column, DateTime, Enum, ForeignKey, Integer, Numeric, String
+from sqlalchemy import Column, DateTime, Enum, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 
@@ -23,8 +24,6 @@ class CreditDetails(Base):
     last_four_digits = Column(String(4), nullable=False)
     billing_cycle_day = Column(Integer, nullable=False)
     due_day = Column(Integer, nullable=False)
-    credit_limit = Column(Numeric(10, 2), nullable=False)
-    available_credit = Column(Numeric(10, 2), nullable=False)
 
 
 class BankDetail(Base):
@@ -36,7 +35,6 @@ class BankDetail(Base):
     agency = Column(String(10), nullable=False)
     account_number = Column(String(20), nullable=False)
     account_type = Column(String(20), nullable=False)  # "Checking", "Savings"
-    balance = Column(Numeric(10, 2), nullable=False)
 
 
 class Account(Base):
@@ -53,23 +51,44 @@ class Account(Base):
     credit_details = relationship("CreditDetails", uselist=False)
     bank_detail = relationship("BankDetail", uselist=False)
 
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        # Validate after initialization
-        self._validate_type()
+    def __init__(
+        self,
+        name: str,
+        created_by: str,
+        agency: str = None,
+        account_number: str = None,
+        account_type: str = None,
+        balance: float = None,
+        last_four_digits: str = None,
+        billing_cycle_day: int = None,
+        due_day: int = None,
+        credit_limit: float = None,
+        available_credit: float = None,
+    ):
+        self.name = name
+        self.created_by = created_by
+        self.created_at = datetime.now()
 
-    def _validate_type(self):
-        """Validate that required detail records exist based on account type."""
-        if not self.type:
-            return  # Skip validation if type is not set yet
-
-        if self.type == AccountType.BANK and not self.bank_detail:
-            raise ValueError("Bank accounts must have bank_detail filled")
-        elif self.type == AccountType.CREDIT_CARD and not self.credit_details:
-            raise ValueError("Credit card accounts must have credit_details filled")
-        elif self.type == AccountType.CASH and (
-            self.bank_detail or self.credit_details
+        if agency and account_number and account_type:
+            self.type = AccountType.BANK
+            self.bank_detail = BankDetail(
+                agency=agency,
+                account_number=account_number,
+                account_type=account_type,
+            )
+        elif (
+            last_four_digits
+            and billing_cycle_day
+            and due_day
+            and credit_limit is not None
         ):
+            self.type = AccountType.CREDIT_CARD
+            self.credit_details = CreditDetails(
+                last_four_digits=last_four_digits,
+                billing_cycle_day=billing_cycle_day,
+                due_day=due_day,
+            )
+        else:
             raise ValueError(
-                "Cash accounts should not have bank_detail or credit_details"
+                "Bank or credit card details must be provided for the account type"
             )

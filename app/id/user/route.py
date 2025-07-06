@@ -1,16 +1,16 @@
 from fastapi import APIRouter
 
 from app.id.user._get_profile import UserProfile, get_user_profile
-from app.id.user._post_register import UserResponse, register
+from app.id.user._post_register import post_register
 from app.id.user._post_token import TokenResponse, token
 
 user_router = APIRouter()
 
 user_router.add_api_route(
     "/register",
-    endpoint=register,
+    endpoint=post_register,
     methods=["POST"],
-    response_model=UserResponse,
+    response_model=None,
     tags=["User Registration"],
     summary="Register a new user",
     description="Register a new user with email, name, and password.",
