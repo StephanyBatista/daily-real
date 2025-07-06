@@ -41,3 +41,35 @@ GET {{baseUrl}}/user/profile
 Authorization: Bearer {{token}}
 
 ###
+
+### Create a new account (credit card type)
+POST {{baseUrl}}/account
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "name": "My Credit Card",
+  "credit_details": {
+    "last_four_digits": "1234",
+    "billing_cycle_day": 15,
+    "due_day": 25
+  }
+}
+
+###
+
+### Create a new account (bank account type)
+POST {{baseUrl}}/account
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "name": "My Checking Account",
+  "bank_detail": {
+    "agency": "12345",
+    "account_number": "987654321",
+    "account_type": "Checking"
+  }
+}
+
+###

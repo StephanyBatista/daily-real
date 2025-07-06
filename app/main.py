@@ -6,7 +6,15 @@ from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 
+# Import models to register them with SQLAlchemy metadata
+from app.id.user._user import User  # noqa: F401
 from app.id.user.route import user_router
+from app.infra.database import create_tables, init_database
+from app.movement.account._account import (  # noqa: F401
+    Account,
+    BankDetail,
+    CreditDetails,
+)
 from app.movement.account.route import account_router
 
 # Set up logging
@@ -23,6 +31,10 @@ app = FastAPI(
     description="App to trace my money",
     version="0.1.0",
 )
+
+# Initialize database schemas and create tables
+init_database()
+create_tables()
 
 
 # Custom exception handler for validation errors
@@ -82,11 +94,6 @@ async def health_check():
 
 if __name__ == "__main__":
     import uvicorn
-
-    from app.infra.database import create_tables, init_database
-
-    init_database()
-    create_tables()
 
     uvicorn.run(
         app, host=os.getenv("HOST", "0.0.0.0"), port=int(os.getenv("PORT", "8000"))

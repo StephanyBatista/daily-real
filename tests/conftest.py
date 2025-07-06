@@ -31,13 +31,19 @@ def test_engine(test_database_url: str):
     """Create a test database engine."""
     engine = create_engine(test_database_url)
 
-    # Create the 'id' schema that our app expects
+    # Create the schemas that our app expects
     with engine.connect() as conn:
         conn.execute(text("CREATE SCHEMA IF NOT EXISTS id"))
+        conn.execute(text("CREATE SCHEMA IF NOT EXISTS movement"))
         conn.commit()
 
-    # Import User model to register it with Base.metadata
+    # Import models to register them with Base.metadata
     from app.id.user._user import User  # noqa: F401
+    from app.movement.account._account import (  # noqa: F401
+        Account,
+        BankDetail,
+        CreditDetails,
+    )
 
     # Create all tables
     Base.metadata.create_all(bind=engine)
@@ -89,20 +95,28 @@ def test_client(test_db_session: Session) -> Generator[TestClient, None, None]:
 @pytest.fixture(scope="function")
 def clean_database(test_db_session: Session):
     """Clean the database before each test."""
-    # Delete all users from the test database
+    # Delete all data from test database tables
     try:
+        # Delete in order due to foreign key constraints
+        test_db_session.execute(text("DELETE FROM movement.credit_details"))
+        test_db_session.execute(text("DELETE FROM movement.bank_details"))
+        test_db_session.execute(text("DELETE FROM movement.accounts"))
         test_db_session.execute(text("DELETE FROM id.users"))
         test_db_session.commit()
     except Exception:
-        # Table might not exist yet, ignore the error
+        # Tables might not exist yet, ignore the error
         test_db_session.rollback()
 
     yield
 
     # Clean up after test
     try:
+        # Delete in order due to foreign key constraints
+        test_db_session.execute(text("DELETE FROM movement.credit_details"))
+        test_db_session.execute(text("DELETE FROM movement.bank_details"))
+        test_db_session.execute(text("DELETE FROM movement.accounts"))
         test_db_session.execute(text("DELETE FROM id.users"))
         test_db_session.commit()
     except Exception:
-        # Table might not exist, ignore the error
+        # Tables might not exist, ignore the error
         test_db_session.rollback()

@@ -17,10 +17,10 @@ class AccountType(enum.Enum):
 # SQLAlchemy models
 class CreditDetails(Base):
     __tablename__ = "credit_details"
-    __table_args__ = {"schema": "moviment"}
+    __table_args__ = {"schema": "movement"}
 
     id = Column(Integer, primary_key=True, index=True)
-    account_id = Column(Integer, ForeignKey("moviment.accounts.id"), nullable=False)
+    account_id = Column(Integer, ForeignKey("movement.accounts.id"), nullable=False)
     last_four_digits = Column(String(4), nullable=False)
     billing_cycle_day = Column(Integer, nullable=False)
     due_day = Column(Integer, nullable=False)
@@ -40,10 +40,10 @@ class CreditDetails(Base):
 
 class BankDetail(Base):
     __tablename__ = "bank_details"
-    __table_args__ = {"schema": "moviment"}
+    __table_args__ = {"schema": "movement"}
 
     id = Column(Integer, primary_key=True, index=True)
-    account_id = Column(Integer, ForeignKey("moviment.accounts.id"), nullable=False)
+    account_id = Column(Integer, ForeignKey("movement.accounts.id"), nullable=False)
     agency = Column(String(10), nullable=False)
     account_number = Column(String(20), nullable=False)
     account_type = Column(String(20), nullable=False)  # "Checking", "Savings"
@@ -63,7 +63,7 @@ class BankDetail(Base):
 
 class Account(Base):
     __tablename__ = "accounts"
-    __table_args__ = {"schema": "moviment"}
+    __table_args__ = {"schema": "movement"}
 
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String(32), nullable=False)

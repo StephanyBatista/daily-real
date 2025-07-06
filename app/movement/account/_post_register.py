@@ -14,7 +14,7 @@ def post_register(
     db: Session = Depends(get_db),
     current_user: UserByToken = Depends(get_user_by_token),
 ):
-    account_db = Account(account=account.name, created_by=current_user.email)
+    account_db = Account(name=account.name, created_by=current_user.email)
 
     if account.credit_details:
         account_db.configure_credit_details(

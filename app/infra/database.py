@@ -28,6 +28,7 @@ def init_database():
     """Initialize database schemas"""
     with engine.connect() as conn:
         conn.execute(text("CREATE SCHEMA IF NOT EXISTS id"))
+        conn.execute(text("CREATE SCHEMA IF NOT EXISTS movement"))
         conn.commit()
 
 

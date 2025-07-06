@@ -132,7 +132,7 @@ Once the application is running, you can explore the API using:
 
 1. **Port already in use**: If port 8000 is already in use, you can specify a different port:
    ```bash
-   uv run uvicorn app.main:app --reload --port 8001
+   uv run uvicorn app.main:app --reload --port 8000
    ```
 
 2. **Database connection issues**: Make sure the PostgreSQL container is running:
