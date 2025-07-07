@@ -53,7 +53,7 @@ class TestUserRegistration:
 
         response2 = test_client.post("/user/register", json=duplicate_user_data)
         assert response2.status_code == 400
-        assert "Email already registered" in response2.json()["detail"]
+        assert "Email already registered" in response2.json()["details"]
 
     def test_registration_with_missing_fields(
         self, test_client: TestClient, clean_database
@@ -65,9 +65,7 @@ class TestUserRegistration:
         assert response1.status_code == 400  # Changed from 422 to 400
         response_data1 = response1.json()
         assert response_data1["error"] == "Validation failed"
-        assert len(response_data1["details"]) == 1
-        assert response_data1["details"][0]["field"] == "email"
-        assert response_data1["details"][0]["message"] == "Field required"
+        assert response_data1["details"] == "email: field required"
 
         # Missing name
         incomplete_data2 = {"email": "test@example.com", "password": "password123"}
@@ -75,9 +73,7 @@ class TestUserRegistration:
         assert response2.status_code == 400  # Changed from 422 to 400
         response_data2 = response2.json()
         assert response_data2["error"] == "Validation failed"
-        assert len(response_data2["details"]) == 1
-        assert response_data2["details"][0]["field"] == "name"
-        assert response_data2["details"][0]["message"] == "Field required"
+        assert response_data2["details"] == "name: field required"
 
         # Missing password
         incomplete_data3 = {"email": "test@example.com", "name": "Test User"}
@@ -85,9 +81,7 @@ class TestUserRegistration:
         assert response3.status_code == 400  # Changed from 422 to 400
         response_data3 = response3.json()
         assert response_data3["error"] == "Validation failed"
-        assert len(response_data3["details"]) == 1
-        assert response_data3["details"][0]["field"] == "password"
-        assert response_data3["details"][0]["message"] == "Field required"
+        assert response_data3["details"] == "password: field required"
 
     def test_registration_with_invalid_email(
         self, test_client: TestClient, clean_database
@@ -103,4 +97,4 @@ class TestUserRegistration:
 
         response_data = response.json()
         assert response_data["error"] == "Validation failed"
-        assert any("email" in detail["field"] for detail in response_data["details"])
+        assert "email" in response_data["details"]

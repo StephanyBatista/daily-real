@@ -16,6 +16,7 @@ from app.movement.account._account import (  # noqa: F401
     CreditDetails,
 )
 from app.movement.account.route import account_router
+from app.util.exceptions import DomainException
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
@@ -45,17 +46,41 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
     """
     logger.warning(f"Validation error on {request.url}: {exc.errors()}")
 
-    errors = []
+    def get_human_readable_message(error):
+        """Convert technical error messages to human-readable ones"""
+
+        # Map common regex patterns to human messages
+        if "String should match pattern" in error:
+            if "'^\d{4}$'" in error:
+                return "must be exactly 4 digits"
+        return error
+        # Add more pattern mappings as needed
+
+    details = ""
     for error in exc.errors():
         field_name = ".".join(
             str(loc) for loc in error["loc"][1:]
         )  # Skip 'body' prefix
-        errors.append(
-            {"field": field_name, "message": error["msg"], "type": error["type"]}
-        )
+        details = f"{field_name}: {get_human_readable_message(error['msg'])}"
 
     return JSONResponse(
-        status_code=400, content={"error": "Validation failed", "details": errors}
+        status_code=400,
+        content={
+            "error": "Validation failed",
+            "details": details.lower(),
+        },
+    )
+
+
+@app.exception_handler(DomainException)
+async def validation_domain_exception_handler(request: Request, exc: DomainException):
+    """
+    Custom handler for validation errors that returns 400 instead of 422
+    """
+    logger.warning(f"Validation error on {request.url}: {exc.error().lower()}")
+
+    return JSONResponse(
+        status_code=400, content={"error": "Validation failed", "details": exc.error()}
     )
 
 

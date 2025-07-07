@@ -1,4 +1,4 @@
-from fastapi import Depends, HTTPException
+from fastapi import Depends
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 
@@ -7,11 +7,12 @@ from app.id.user._repository import get_user_by_username
 from app.id.user._user import User
 from app.id.user._user_create import UserCreate
 from app.infra.database import get_db
+from app.util.exceptions import DomainException
 
 
 def post_register(user: UserCreate, db: Session = Depends(get_db)):
     if get_user_by_username(db, user.email):
-        raise HTTPException(status_code=400, detail="Email already registered")
+        raise DomainException("Email already registered")
     db_user = User(
         email=user.email,
         name=user.name,

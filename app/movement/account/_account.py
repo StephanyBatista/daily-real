@@ -6,6 +6,8 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 
 from app.infra.database import Base
+from app.movement.account._account_create import AccountCreate
+from app.util.exceptions import DomainException
 
 
 class AccountType(enum.Enum):
@@ -50,11 +52,11 @@ class BankDetail(Base):
 
     def __init__(self, agency: str, account_number: str, account_type: str):
         if not agency:
-            raise ValueError("Agency cannot be empty")
+            raise DomainException("Agency cannot be empty")
         if not account_number:
-            raise ValueError("Account number cannot be empty")
+            raise DomainException("Account number cannot be empty")
         if not account_type:
-            raise ValueError("Account type cannot be empty")
+            raise DomainException("Account type cannot be empty")
 
         self.agency = agency
         self.account_number = account_number
@@ -75,36 +77,31 @@ class Account(Base):
     credit_details = relationship("CreditDetails", uselist=False)
     bank_detail = relationship("BankDetail", uselist=False)
 
-    def __init__(
-        self,
-        name: str,
-        created_by: str,
-    ):
-        if not name:
-            raise ValueError("Account name cannot be empty")
+    def __init__(self, payload: AccountCreate, created_by: str):
+        if not payload.name:
+            raise DomainException("Account name cannot be empty")
         if not created_by:
-            raise ValueError("Created by cannot be empty")
+            raise DomainException("Created by cannot be empty")
 
-        self.name = name
+        self.name = payload.name
         self.created_by = created_by
         self.created_at = datetime.now()
 
-    def configure_credit_details(
-        self, last_four_digits: str, billing_cycle_day: int, due_day: int
-    ):
-        self.type = AccountType.CREDIT_CARD
-        self.credit_details = CreditDetails(
-            last_four_digits=last_four_digits,
-            billing_cycle_day=billing_cycle_day,
-            due_day=due_day,
-        )
-
-    def configure_bank_details(
-        self, agency: str, account_number: str, account_type: str
-    ):
-        self.type = AccountType.BANK
-        self.bank_detail = BankDetail(
-            agency=agency,
-            account_number=account_number,
-            account_type=account_type,
-        )
+        if payload.bank_detail:
+            self.type = AccountType.BANK
+            self.bank_detail = BankDetail(
+                agency=payload.bank_detail.agency,
+                account_number=payload.bank_detail.account_number,
+                account_type=payload.bank_detail.account_type,
+            )
+        elif payload.credit_details:
+            self.type = AccountType.CREDIT_CARD
+            self.credit_details = CreditDetails(
+                last_four_digits=payload.credit_details.last_four_digits,
+                billing_cycle_day=payload.credit_details.billing_cycle_day,
+                due_day=payload.credit_details.due_day,
+            )
+        else:
+            raise DomainException(
+                "Must provide either credit details or bank details for account configuration"
+            )

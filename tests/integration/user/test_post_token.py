@@ -69,9 +69,7 @@ class TestTokenGeneration:
         assert response1.status_code == 400  # Changed from 422 to 400
         response_data1 = response1.json()
         assert response_data1["error"] == "Validation failed"
-        assert any(
-            "username" in detail["field"] for detail in response_data1["details"]
-        )
+        assert response_data1["details"] == "username: field required"
 
         # Missing password
         incomplete_data2 = {"username": "test@example.com"}
@@ -79,6 +77,4 @@ class TestTokenGeneration:
         assert response2.status_code == 400  # Changed from 422 to 400
         response_data2 = response2.json()
         assert response_data2["error"] == "Validation failed"
-        assert any(
-            "password" in detail["field"] for detail in response_data2["details"]
-        )
+        assert response_data2["details"] == "password: field required"

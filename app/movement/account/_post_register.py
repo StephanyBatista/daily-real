@@ -14,20 +14,7 @@ def post_register(
     db: Session = Depends(get_db),
     current_user: UserByToken = Depends(get_user_by_token),
 ):
-    account_db = Account(name=account.name, created_by=current_user.email)
-
-    if account.credit_details:
-        account_db.configure_credit_details(
-            account.credit_details.last_four_digits,
-            account.credit_details.billing_cycle_day,
-            account.credit_details.due_day,
-        )
-    else:
-        account_db.configure_bank_details(
-            account.bank_detail.agency,
-            account.bank_detail.account_number,
-            account.bank_detail.account_type,
-        )
+    account_db = Account(payload=account, created_by=current_user.email)
 
     db.add(account_db)
     db.commit()

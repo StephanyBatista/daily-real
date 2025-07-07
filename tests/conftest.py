@@ -120,3 +120,60 @@ def clean_database(test_db_session: Session):
     except Exception:
         # Tables might not exist, ignore the error
         test_db_session.rollback()
+
+
+@pytest.fixture(scope="function")
+def authenticated_user(test_client: TestClient, clean_database):
+    """Create an authenticated user and return the token."""
+    user_data = {
+        "email": "test@example.com",
+        "name": "Test User",
+        "password": "secure_password123",
+    }
+    test_client.post("/user/register", json=user_data)
+
+    # Authenticate to get token
+    auth_data = {"username": "test@example.com", "password": "secure_password123"}
+    auth_response = test_client.post("/user/token", data=auth_data)
+    token = auth_response.json()["access_token"]
+
+    return {
+        "token": token,
+        "email": "test@example.com",
+        "name": "Test User",
+        "headers": {"Authorization": f"Bearer {token}"},
+    }
+
+
+@pytest.fixture(scope="function")
+def authenticated_user_factory(test_client: TestClient, clean_database):
+    """Factory fixture to create multiple authenticated users with different emails."""
+    created_users = []
+
+    def _create_user(
+        email: str, name: str = "Test User", password: str = "secure_password123"
+    ):
+        user_data = {
+            "email": email,
+            "name": name,
+            "password": password,
+        }
+        test_client.post("/user/register", json=user_data)
+
+        # Authenticate to get token
+        auth_data = {"username": email, "password": password}
+        auth_response = test_client.post("/user/token", data=auth_data)
+        token = auth_response.json()["access_token"]
+
+        user_info = {
+            "token": token,
+            "email": email,
+            "name": name,
+            "headers": {"Authorization": f"Bearer {token}"},
+        }
+        created_users.append(user_info)
+        return user_info
+
+    yield _create_user
+
+    # Cleanup is handled by clean_database fixture
